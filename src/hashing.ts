@@ -52,13 +52,16 @@ async function hashTransaction(tx: TxBody, encoding = 'base64', includeSign = tr
     if (amountUnit && amountUnit[1] !== 'aer') {
         throw Error(`Can only hash amounts provided in the base unit (aer), not ${tx.amount}. Convert to aer or remove unit.`);
     }
-    tx.amount = tx.amount.replace(/[^0-9]/g, '');
+
+    const amount = tx.amount.replace(/[^0-9]/g,'');
+    // check '' amount
+    amount!= '' ? amount : tx.amount = '0 aer';
 
     const items = [
         fromNumber(tx.nonce, 64),
         decodeAddress(tx.from.toString()),
         tx.to ? decodeAddress(tx.to.toString()) : Buffer.from([]),
-        fromBigInt(tx.amount ? tx.amount.toString() : 0),
+        fromBigInt(amount!= '' ? amount : 0),
         tx.payload ? Buffer.from(tx.payload) : Buffer.from([]),
         fromNumber(tx.limit || 0, 64),
         fromBigInt(tx.price ? tx.price.toString() : 0),
